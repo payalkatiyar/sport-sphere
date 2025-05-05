@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model events {
+  event_id       String                @id @db.VarChar(10)
+  event_name     String                @db.VarChar(150)
+  event_type     String                @db.VarChar(100)
+  date           DateTime              @db.Date
+  location       String                @db.VarChar(200)
+  status         events_status
+  organizer_id   String                @db.VarChar(10)
+  event_category events_event_category
+
+  @@index([organizer_id], map: "organizer_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model participants {
+  participant_id String              @id @db.VarChar(10)
+  user_id        String              @db.VarChar(10)
+  event_id       String              @db.VarChar(10)
+  age            Int?
+  team_name      String?             @db.VarChar(100)
+  status         participants_status
+
+  @@index([event_id], map: "event_id")
+  @@index([user_id], map: "user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model results {
+  result_id      String                @id @db.VarChar(10)
+  event_id       String                @db.VarChar(10)
+  participant_id String                @db.VarChar(10)
+  score          Int?
+  rank           Int?
+  winner_status  results_winner_status
+
+  @@index([event_id], map: "event_id")
+  @@index([participant_id], map: "participant_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model schedules {
+  schedule_id String          @id @db.VarChar(10)
+  event_id    String          @db.VarChar(10)
+  match_time  DateTime        @db.Time(0)
+  venue       String          @db.VarChar(200)
+  round       schedules_round
+
+  @@index([event_id], map: "event_id")
+}
+
+model users {
+  user_id   String          @id @db.VarChar(10)
+  name      String          @db.VarChar(100)
+  email     String          @unique(map: "email") @db.VarChar(100)
+  password  String          @db.VarChar(255)
+  user_type users_user_type
+}
+
+model teams {
+  team_name String @id @db.VarChar(100)
+
+  @@map("teams")
+}
+
+enum schedules_round {
+  Quarterfinal
+  Semifinal
+  Final
+  FP1
+  FP2
+  FP3
+  Q1
+  Q2
+  Q3
+  Race_Day     @map("Race Day")
+}
+
+enum users_user_type {
+  Admin
+  Participant
+  Organizer
+}
+
+enum events_status {
+  Upcoming
+  Ongoing
+  Completed
+}
+
+enum participants_status {
+  Registered
+  Active
+  Disqualified
+}
+
+enum results_winner_status {
+  Winner
+  Runner_up  @map("Runner-up")
+  Eliminated
+}
+
+enum events_event_category {
+  Team
+  Individual
+}
